@@ -70,7 +70,9 @@ def pii_scan(text: str, analyzer=None, anonymizer=None) -> dict:
     if analyzer is None or anonymizer is None:
         analyzer, anonymizer = setup_presidio()
 
-    results = analyzer.analyze(text=text, language=PRESIDIO_LANGUAGE)
+    raw_results = analyzer.analyze(text=text, language=PRESIDIO_LANGUAGE)
+    target_types = {"VN_CCCD", "VN_PHONE", "EMAIL_ADDRESS"}
+    results = [r for r in raw_results if r.entity_type in target_types]
     if not results:
         return {"has_pii": False, "entities": [], "anonymized": text}
 
@@ -104,8 +106,15 @@ def setup_nemo_rails():
     from nemoguardrails import RailsConfig, LLMRails
 
     config = RailsConfig.from_path(GUARDRAILS_CONFIG_DIR)
+    chosen_model = os.getenv("GUARD_MODEL")
+    if not chosen_model:
+        if GENERATION_MODEL != "google/gemini-3.1-flash-lite-preview":
+            chosen_model = GENERATION_MODEL
+        else:
+            chosen_model = "openai/gpt-4o-mini"
+
     llm = ChatOpenAI(
-        model=GENERATION_MODEL,
+        model=chosen_model,
         api_key=OPENROUTER_API_KEY,
         base_url=OPENROUTER_BASE_URL,
         temperature=0,
