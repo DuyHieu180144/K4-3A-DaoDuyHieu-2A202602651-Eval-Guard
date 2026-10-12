@@ -1,10 +1,10 @@
 # Nhóm thực hiện K4 Track 3A
 
-Tên nhóm: Chưa được cung cấp — nhóm bổ sung trước khi nộp
+Tên nhóm: Hiếu và Dũng
 
-Repo chung: Chưa được cung cấp — nhóm bổ sung trước khi nộp
+Repo chung: https://github.com/DuyHieu180144/K4-3A-DaoDuyHieu-2A202602651-Eval-Guard
 
-Trưởng nhóm/người nộp: Chưa được cung cấp — nhóm bổ sung trước khi nộp
+Trưởng nhóm/người nộp: Đào Duy Hiếu - 2A202602651 / Nguyễn Việt Dũng - 2A202602533
 
 Ngày lab/deadline áp dụng: Chưa xác nhận theo thông báo lớp — Asia/Ho_Chi_Minh (UTC+07:00)
 
