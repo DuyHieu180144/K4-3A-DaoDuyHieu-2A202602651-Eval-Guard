@@ -1,44 +1,36 @@
 # Bàn giao Hiếu → Dũng: CP0 và Phase A
 
-Ngày cập nhật: 2026-10-12  
-Trạng thái: code CP0/Phase A đã tích hợp và kiểm tra offline; live run đang chờ runtime nhận API key.
+Ngày cập nhật: 2026-10-12
+Trạng thái: CP0 + Phase A live đã chạy; artifact và failure report đã được tạo, kiểm tra.
 
-## Phạm vi Hiếu đã hoàn tất trong mã nguồn
+## Phạm vi Hiếu đã hoàn tất
 
 - Hoàn thiện kết nối pipeline m1–m5, cấu hình OpenRouter và runner có xác nhận `--live`.
-- Qdrant client 1.9.x dùng `search(query_vector=...)`; fallback Qdrant in-memory dùng được khi server local chưa chạy.
-- m4 gắn evaluator vào metric instances riêng và lưu đúng trạng thái/model provenance.
-- Phase A kiểm tra dữ liệu đầu vào, trả đúng 50 kết quả hợp lệ, bottom 10 ổn định, phân tích cụm lỗi theo điểm trung bình.
-- NeMo setup khởi tạo `ChatOpenAI` trực tiếp bằng model, API base và key từ config để dùng OpenRouter chat; không dựa vào heuristic chọn provider theo model slug của NeMo 0.10.0.
-- Regression tests mới ở `tests/test_hieu_pipeline.py`; contract tests Phase A ở `tests/test_phase_a.py`.
+- Qdrant client 1.9.x dùng `search(query_vector=...)`; fallback Qdrant in-memory hoạt động khi server local chưa chạy.
+- m4 gắn evaluator vào metric instances riêng và lưu đúng model provenance.
+- Phase A kiểm tra đầu vào, trả đúng 50 kết quả, bottom 10 ổn định và failure matrix theo điểm.
+- NeMo setup inject `ChatOpenAI` với model/API base/key từ config để dùng OpenRouter chat trên NeMo 0.10.0.
+- Regression tests ở `tests/test_hieu_pipeline.py`; Phase A contract tests ở `tests/test_phase_a.py`.
 
-## Bằng chứng kiểm tra hiện có
+## Bằng chứng và artifact
 
-- Python 3.11.9; `pip check` sạch.
-- Offline suite CP0 + Phase A + report contracts: 46 passed.
-- `py_compile` cho các module đã sửa và `git diff --check`: thành công.
-- Docker daemon hiện không sẵn sàng; Qdrant in-memory fallback đã có regression coverage.
-- Chưa sinh `artifacts/answers_50q.json` hoặc `artifacts/ragas_50q.json`; không dùng dữ liệu giả thay cho live run.
+- Python 3.11.9; `pip check` sạch; bộ test CP0 + Phase A + report contracts: 47 passed.
+- `artifacts/answers_50q.json`: 50/50 câu dùng generation mode `llm`; IDs, question, distribution, ground truth khớp fixture; contexts không rỗng.
+- `artifacts/ragas_50q.json`: 50/50 rows, `run_kind: live`, distribution 20/20/10, evaluator model provenance và failure matrix.
+- `doc/reports/failure_clusters.md`: scores, bottom 10, đối chiếu answer/context/ground truth và giới hạn thực nghiệm.
+- OpenRouter smoke call thành công với `google/gemini-3.1-flash-lite-preview`.
+- PyArrow đã pin ở 19.0.1 để tương thích NumPy 1.26.4; `pip check` sạch.
 
-## Việc Hiếu cần hoàn tất khi runtime nạp được key
+## Kết quả Phase A
 
-1. Đặt `OPENROUTER_API_KEY` trong `.env` ở repo root (hoặc dùng tên tương thích `OPENAI_API_KEY`). Không gửi key qua chat, không thêm `.env` vào Git.
-2. Từ repo root, dùng đúng interpreter đã chuẩn bị:
+`multi_hop` có mean thấp nhất (0.6513); `answer_relevancy` là worst metric thường gặp nhất (21/50). Báo cáo đề xuất sửa retrieval/chunking theo bảng và đảm bảo đủ context cho từng vế multi-hop.
 
-   ```powershell
-   .\.venv311\Scripts\python.exe scripts\setup_answers.py --live
-   .\.venv311\Scripts\python.exe scripts\run_experiments.py --phase a --live
-   ```
+## Giới hạn cần bàn giao
 
-3. Chỉ tiếp tục nếu answers có đủ 50 IDs theo test set, `generation_mode`/contexts đúng nguồn, và RAGAS có `evaluation_status: evaluated`, 50 rows cùng evaluator model metadata.
-4. Dựa trên `artifacts/ragas_50q.json` để hoàn thiện `doc/reports/failure_clusters.md`; cập nhật kết quả thực tế và giới hạn vào `doc/TEAM.md`.
-
-Config xóa `OPENROUTER_API_KEY` và `OPENAI_API_KEY` kế thừa từ terminal/IDE trước khi nạp `.env` ở repo root, để key cũ trong session không được dùng nhầm. Kiểm tra gần nhất cho thấy `.env` có tên `OPENAI_API_KEY` nhưng config nhận giá trị rỗng; không có giá trị bí mật nào được đọc ra màn hình. Runner giờ dừng trước khi dựng pipeline nếu thiếu key, tránh tạo answers bằng extractive fallback rồi nhầm là live evidence.
-
-Đã sửa lỗi dependency kế tiếp: pin `pyarrow==19.0.1` tương thích với `numpy==1.26.4`; import hai package và `pip check` đều đạt trong `.venv311`.
+Qdrant local không kết nối được nên lần chạy này dùng in-memory. Hai PDF scan không có text layer (`BCTC.pdf` và nghị định dữ liệu cá nhân) bị bỏ qua. Hugging Face tải model không đăng nhập; embeddings/reranker chạy local. RAGAS là evaluator tự động, chưa thay review thủ công cho các ca tính toán/version.
 
 ## Điểm nối cho Dũng
 
-Dũng có thể bắt đầu Phase B/C trên cùng nhánh sau các commit CP0/Phase A. Dùng `config.create_llm_client()` cho judge và `src.phase_c_guard.setup_nemo_rails()` cho NeMo; hàm setup đã inject chat model OpenRouter tường minh. Trước Phase C live run, chạy smoke test một input sạch và một input bị chặn để xác nhận rails thực sự gọi chat API. Không dùng Phase A score `0` hoặc test mock làm kết quả đánh giá.
+Dũng có thể tiếp tục Phase B/C trên cùng nhánh. Dùng `config.create_llm_client()` cho judge và `src.phase_c_guard.setup_nemo_rails()` cho NeMo; hàm setup đã inject chat model OpenRouter tường minh. Trước Phase C live run, smoke test một input sạch và một input bị chặn để xác nhận rails thật sự gọi chat API.
 
-Các kết quả API/live thuộc phần Hiếu vẫn là điều kiện cần trước khi coi bàn giao Phase A đã hoàn tất. Không push hoặc nộp repo khi chưa được trưởng nhóm cho phép.
+Chưa push hoặc nộp repo. Các trường tên nhóm, repo URL, người nộp và MSSV cần xác nhận/điền trong `doc/TEAM.md` trước khi nộp.
