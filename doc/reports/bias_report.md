@@ -2,7 +2,7 @@
 
 Nhóm: Hiếu và Dũng
 
-Người phụ trách: Dũng (MSSV: dung-02533)
+Người phụ trách: Nguyễn Việt Dũng (MSSV: 2A202602533)
 
 Nguồn: `artifacts/judge_results.json`; run timestamp: 2026-10-12T15:21:46.477247+00:00.
 Models generation/judge: generation `google/gemini-3.1-flash-lite-preview` và judge `google/gemini-3.1-flash-lite-preview`.

@@ -2,7 +2,7 @@
 
 Nhóm: Hiếu và Dũng
 
-Người phụ trách: Đào Duy Hiếu (2A202602651) và Dũng (dung-02533)
+Người phụ trách: Đào Duy Hiếu (2A202602651) và Nguyễn Việt Dũng (2A202602533)
 
 Đây là **đề xuất CI/CD**, không phải workflow đã được triển khai/chạy.
 Nguồn kết quả: artifacts/ragas_50q.json, judge_results.json, guard_results.json.

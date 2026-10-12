@@ -17,7 +17,7 @@ Commit bàn giao CP0 + Phase A: `ae9337e` (feat(hieu): complete CP0 and Phase A 
 | STT | Họ và tên | MSSV | Vai trò / công việc thật | Bằng chứng |
 |---|---|---|---|---|
 | 1 | Đào Duy Hiếu | 2A202602651 | CP0 + Phase A: OpenRouter config, m1–m5 integration, Qdrant/m4 fixes, Phase A evaluation và failure analysis | Commits `e03c593`, `14fc45d`, `bab7d56`; `artifacts/answers_50q.json`, `artifacts/ragas_50q.json`, `doc/reports/failure_clusters.md` |
-| 2 | Dũng (DungBallad) | dung-02533 | Phase B/C: LLM-as-a-Judge, calibration, Presidio PII, NeMo input/output guardrails, adversarial suite, latency benchmarking, reports | Commits `ce9b4bd`, `6cd1c06`; `artifacts/judge_results.json`, `artifacts/guard_results.json`, `doc/reports/bias_report.md`, `doc/reports/blueprint.md` |
+| 2 | Nguyễn Việt Dũng | 2A202602533 | Phase B/C: LLM-as-a-Judge, calibration, Presidio PII, NeMo input/output guardrails, adversarial suite, latency benchmarking, reports | Commits `ce9b4bd`, `6cd1c06`; `artifacts/judge_results.json`, `artifacts/guard_results.json`, `doc/reports/bias_report.md`, `doc/reports/blueprint.md` |
 
 Người tích hợp/chạy batch: Đào Duy Hiếu — setup 50 answers và Phase A live; artifact được kiểm tra 50/50 rows.
 
@@ -42,9 +42,9 @@ Người tích hợp/chạy batch: Đào Duy Hiếu — setup 50 answers và Pha
 - Nguồn/AI hỗ trợ: Codex hỗ trợ rà soát interface, viết regression tests, triển khai và phân tích artifact; các lệnh live, provenance, row counts và schema được kiểm chứng trong repo.
 
 
-### Dung-dung-02533
+### NguyenVietDung-2A202602533
 
-- MSSV: dung-02533 (cập nhật mã định danh sinh viên theo hệ thống lớp).
+- MSSV: 2A202602533
 - Phần được giao và phần thực tế đã làm: Toàn bộ Phase B và Phase C; triển khai LLM-as-a-Judge với kỹ thuật swap-and-average, tính Cohen's kappa và bias report; tích hợp Presidio PII scanner cho CCCD/CMND/SĐT/email VN; cấu hình NeMo Guardrails input và output rails qua OpenRouter; thực thi toàn bộ adversarial suite (20 attacks, 8 clean controls, 4 output cases); đo kiểm độ trễ tuần tự (20 mẫu timed sau 2 warm-up); soạn thảo `doc/reports/bias_report.md` và `doc/reports/blueprint.md`.
 - Bằng chứng: commits `ce9b4bd`, `6cd1c06`; `artifacts/judge_results.json`; `artifacts/guard_results.json`; `doc/reports/bias_report.md`; `doc/reports/blueprint.md`.
 - Cách kiểm tra: offline pytest 97/97 tests pass (100%); `scripts/check_lab.py --with-tests` PASS (0 failed checks); live artifacts: Phase B đạt κ = 1.0 và 0.0 position bias; Phase C đạt 20/20 attacks blocked, 8/8 clean inputs allowed (false positive rate = 0.0), 4/4 output cases đúng.
