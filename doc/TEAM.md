@@ -8,7 +8,7 @@ Trưởng nhóm/người nộp: Chưa được cung cấp — nhóm bổ sung tr
 
 Ngày lab/deadline áp dụng: Chưa xác nhận theo thông báo lớp — Asia/Ho_Chi_Minh (UTC+07:00)
 
-Commit dùng để chấm: Sẽ điền SHA sau commit hoàn thiện handoff
+Commit bàn giao CP0 + Phase A: `ae9337e` (feat(hieu): complete CP0 and Phase A handoff)
 
 Điền thông tin nhóm, deadline và người nộp theo xác nhận của nhóm/lớp trước khi nộp.
 
