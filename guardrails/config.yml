@@ -3,7 +3,9 @@ colang_version: "1.0"
 models:
   - type: main
     engine: openai
-    model: gpt-4o-mini
+    model: google/gemini-3.1-flash-lite-preview
+    parameters:
+      openai_api_base: https://openrouter.ai/api/v1
 
 instructions:
   - type: general

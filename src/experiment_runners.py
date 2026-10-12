@@ -6,7 +6,8 @@ from dataclasses import asdict
 from pathlib import Path
 
 from config import (ADVERSARIAL_SET_PATH, ANSWERS_PATH, ARTIFACTS_DIR, CLEAN_SET_PATH,
-                    HUMAN_LABELS_PATH, OUTPUT_SET_PATH, PAIR_QUESTION_IDS, TEST_SET_PATH)
+                    HUMAN_LABELS_PATH, OUTPUT_SET_PATH, PAIR_QUESTION_IDS, TEST_SET_PATH,
+                    create_llm_client)
 from src.experiment_support import (JUDGE_MODEL, generation_models, guard_models, judge_binary,
                                     metadata, model_ids, read_json, write_json)
 from src.report_contracts import PAIR_SOURCES, validate_answers, validate_phase_a, validate_phase_b, validate_phase_c
@@ -52,8 +53,7 @@ def run_phase_b():
             reference=q["ground_truth"])
         results.append({"question_id": qid, **asdict(result)})
     judgments = []
-    from openai import OpenAI
-    binary_client = OpenAI()
+    binary_client = create_llm_client()
     for human in humans:
         # Exact supplied answer. Never pass human_label or human_note into judge_binary.
         result = judge_binary(human["question"], human["model_answer"],

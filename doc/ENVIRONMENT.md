@@ -1,5 +1,19 @@
 # Môi trường K4 Track 3A
 
+## Cấu hình OpenRouter
+
+Tạo key tại [OpenRouter](https://openrouter.ai/keys), đặt trong `.env` ở thư mục gốc:
+
+```dotenv
+OPENROUTER_API_KEY=your_openrouter_key
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+```
+
+Các luồng sinh câu trả lời, RAGAS, judge và NeMo Guardrails dùng
+`google/gemini-3.1-flash-lite-preview` qua OpenRouter. `OPENAI_API_KEY` vẫn được
+nhận làm biến tương thích ngược nếu bạn đã điền key theo mẫu cũ. Không commit
+`.env` hoặc key. Embedding RAGAS và pipeline vẫn dùng model local `BAAI/bge-m3`.
+
 ## Phiên bản mục tiêu và cách kiểm tra
 
 Dùng Python 3.11 cho lab này. Tạo virtualenv mới sau khi tải starter, cài
