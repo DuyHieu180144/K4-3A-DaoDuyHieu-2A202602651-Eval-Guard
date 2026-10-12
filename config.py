@@ -1,9 +1,14 @@
 """Shared configuration for K4 / Track 3A: Eval + Guardrail Stack."""
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# This lab's committed-safe local config is the repo-root .env; prefer it over
+# stale variables inherited from an IDE or terminal session.
+os.environ.pop("OPENROUTER_API_KEY", None)
+os.environ.pop("OPENAI_API_KEY", None)
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=True)
 
 # --- OpenRouter (OpenAI-compatible API) ---
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip()

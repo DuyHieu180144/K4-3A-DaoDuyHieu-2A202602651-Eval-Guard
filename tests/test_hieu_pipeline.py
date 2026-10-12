@@ -41,6 +41,19 @@ def test_dense_search_falls_back_to_memory_on_connection_error(monkeypatch):
     assert search._encoder is None
 
 
+def test_live_answer_setup_stops_before_pipeline_without_key(monkeypatch):
+    from scripts import setup_answers
+
+    monkeypatch.setattr(setup_answers, "OPENROUTER_API_KEY", "")
+    monkeypatch.setattr(
+        setup_answers,
+        "build_pipeline",
+        lambda: (_ for _ in ()).throw(AssertionError("pipeline must not start")),
+    )
+
+    assert setup_answers.main(["--live"]) == 2
+
+
 def test_dense_search_uses_qdrant_1_9_search_api():
     search = DenseSearch.__new__(DenseSearch)
 

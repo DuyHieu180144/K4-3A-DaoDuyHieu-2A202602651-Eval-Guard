@@ -19,7 +19,14 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import ROOT_DIR, TEST_SET_PATH, ANSWERS_PATH, GENERATION_MODEL, create_llm_client
+from config import (
+    ROOT_DIR,
+    TEST_SET_PATH,
+    ANSWERS_PATH,
+    GENERATION_MODEL,
+    OPENROUTER_API_KEY,
+    create_llm_client,
+)
 
 
 def check_day18_files() -> bool:
@@ -117,6 +124,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not args.live:
         parser.error("Generation/enrichment may call APIs. Pass --live after completing pre-class setup.")
+    if not OPENROUTER_API_KEY:
+        print("Set OPENROUTER_API_KEY in the repo-root .env before live answer generation.")
+        return 2
     print("=" * 60)
     print("K4 / TRACK 3A SETUP — Generating answers for 50 questions")
     print("=" * 60)
@@ -137,7 +147,6 @@ def main(argv=None):
 
     print(f"\nRunning {len(test_set)} queries...")
     answers = []
-    from config import OPENROUTER_API_KEY
     client = None
     if OPENROUTER_API_KEY:
         client = create_llm_client()
@@ -171,4 +180,4 @@ def main(argv=None):
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    main()
+    raise SystemExit(main())

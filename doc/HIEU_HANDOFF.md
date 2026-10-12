@@ -33,7 +33,9 @@ Trạng thái: code CP0/Phase A đã tích hợp và kiểm tra offline; live ru
 3. Chỉ tiếp tục nếu answers có đủ 50 IDs theo test set, `generation_mode`/contexts đúng nguồn, và RAGAS có `evaluation_status: evaluated`, 50 rows cùng evaluator model metadata.
 4. Dựa trên `artifacts/ragas_50q.json` để hoàn thiện `doc/reports/failure_clusters.md`; cập nhật kết quả thực tế và giới hạn vào `doc/TEAM.md`.
 
-Runtime kiểm tra gần nhất tìm thấy `.env` nhưng config không nhận được giá trị cho cả `OPENROUTER_API_KEY` lẫn legacy `OPENAI_API_KEY`. Không có giá trị bí mật nào được đọc ra màn hình. Khi người dùng xác nhận runtime đã nhận key, chạy lại hai lệnh trên.
+Config xóa `OPENROUTER_API_KEY` và `OPENAI_API_KEY` kế thừa từ terminal/IDE trước khi nạp `.env` ở repo root, để key cũ trong session không được dùng nhầm. Kiểm tra gần nhất cho thấy `.env` có tên `OPENAI_API_KEY` nhưng config nhận giá trị rỗng; không có giá trị bí mật nào được đọc ra màn hình. Runner giờ dừng trước khi dựng pipeline nếu thiếu key, tránh tạo answers bằng extractive fallback rồi nhầm là live evidence.
+
+Đã sửa lỗi dependency kế tiếp: pin `pyarrow==19.0.1` tương thích với `numpy==1.26.4`; import hai package và `pip check` đều đạt trong `.venv311`.
 
 ## Điểm nối cho Dũng
 
