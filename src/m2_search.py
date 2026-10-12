@@ -148,14 +148,14 @@ class DenseSearch:
 
         query_vector = self._get_encoder().encode(query)
         query_vector = query_vector.tolist() if hasattr(query_vector, "tolist") else list(query_vector)
-        response = self.client.query_points(
+        points = self.client.search(
             collection_name=collection,
-            query=query_vector,
+            query_vector=query_vector,
             limit=top_k,
             with_payload=True,
         )
         results = []
-        for point in response.points:
+        for point in points:
             payload = point.payload or {}
             text = payload.get("text")
             if isinstance(text, str):

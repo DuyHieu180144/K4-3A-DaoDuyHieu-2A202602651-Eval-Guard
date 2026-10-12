@@ -6,6 +6,7 @@ import json
 import math
 import os
 import sys
+from copy import copy
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -128,10 +129,17 @@ def evaluate_ragas(questions: list[str], answers: list[str],
         evaluator_embeddings = HuggingfaceEmbeddings(model_name=EMBEDDING_MODEL)
         embedding_model_id = getattr(evaluator_embeddings, "model_name", EMBEDDING_MODEL)
         evaluator_models = [llm_model_id, embedding_model_id]
+        metrics = [
+            copy(metric)
+            for metric in (faithfulness, answer_relevancy, context_precision, context_recall)
+        ]
+        for metric in metrics:
+            metric.llm = evaluator_llm
+            metric.embeddings = evaluator_embeddings
 
         result = evaluate(
             dataset,
-            metrics=[faithfulness, answer_relevancy, context_precision, context_recall],
+            metrics=metrics,
             llm=evaluator_llm,
             embeddings=evaluator_embeddings,
         )
