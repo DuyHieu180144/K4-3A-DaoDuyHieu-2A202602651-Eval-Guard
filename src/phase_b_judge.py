@@ -54,8 +54,12 @@ Answer B:
 Trả lời JSON (chỉ JSON, không text khác):
 {{"winner": "A" hoặc "B" hoặc "tie", "reasoning": "giải thích ngắn gọn", "scores": {{"A": 0.0-1.0, "B": 0.0-1.0}}}}
 """
-    from openai import OpenAI
-    client = OpenAI()
+    try:
+        from config import create_llm_client
+        client = create_llm_client()
+    except Exception:
+        from openai import OpenAI
+        client = OpenAI()
     resp = client.chat.completions.create(
         model=JUDGE_MODEL,
         messages=[
