@@ -1,13 +1,35 @@
 """Shared configuration for K4 / Track 3A: Eval + Guardrail Stack."""
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+# This lab's committed-safe local config is the repo-root .env; prefer it over
+# stale variables inherited from an IDE or terminal session.
+os.environ.pop("OPENROUTER_API_KEY", None)
+os.environ.pop("OPENAI_API_KEY", None)
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=True)
 
-# --- API Keys ---
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+# --- OpenRouter (OpenAI-compatible API) ---
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip()
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").strip()
+# Keep the old name as an alias for existing scripts and integrations.
+OPENAI_API_KEY = OPENROUTER_API_KEY
+OPENAI_API_BASE = OPENROUTER_BASE_URL
+if OPENROUTER_API_KEY:
+    # LangChain/RAGAS and NeMo's OpenAI-compatible provider read these names.
+    os.environ["OPENAI_API_KEY"] = OPENROUTER_API_KEY
+os.environ["OPENAI_API_BASE"] = OPENROUTER_BASE_URL
 HF_TOKEN = os.getenv("HF_TOKEN", "")  # Optional: for HuggingFace models
+
+
+def create_llm_client():
+    """Create an OpenAI SDK client pointed at the configured OpenRouter API."""
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("Set OPENROUTER_API_KEY in .env (or legacy OPENAI_API_KEY).")
+    from openai import OpenAI
+
+    return OpenAI(api_key=OPENROUTER_API_KEY, base_url=OPENROUTER_BASE_URL)
 
 # --- Qdrant (same as Day 18) ---
 QDRANT_HOST = "localhost"
@@ -45,8 +67,8 @@ GUARDRAILS_CONFIG_DIR = os.path.join(ROOT_DIR, "guardrails")
 PAIR_QUESTION_IDS = (1, 5, 12, 21, 41)
 
 # --- LLM Judge ---
-GENERATION_MODEL = "gpt-4o-mini"
-JUDGE_MODEL = "gpt-4o-mini"
+GENERATION_MODEL = "google/gemini-3.1-flash-lite-preview"
+JUDGE_MODEL = "google/gemini-3.1-flash-lite-preview"
 
 # --- Guardrail latency budget ---
 LATENCY_BUDGET_P95_MS = 500  # Full guard target; Task 12 currently measures input guards only.

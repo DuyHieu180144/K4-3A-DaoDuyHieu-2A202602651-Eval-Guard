@@ -8,7 +8,7 @@ Yêu cầu:
     1. Có 5 module m1-m5 với giao diện trong doc/PIPELINE_INTERFACE.md
        Script tự lắp module; không gọi src/pipeline.py.
     2. docker compose -f infra/docker-compose.yml up -d  (Qdrant đang chạy trên port 6333)
-    3. .env có OPENAI_API_KEY
+    3. .env có OPENROUTER_API_KEY (OPENAI_API_KEY cũ vẫn được nhận)
 """
 from __future__ import annotations
 
@@ -19,7 +19,14 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import ROOT_DIR, TEST_SET_PATH, ANSWERS_PATH, GENERATION_MODEL
+from config import (
+    ROOT_DIR,
+    TEST_SET_PATH,
+    ANSWERS_PATH,
+    GENERATION_MODEL,
+    OPENROUTER_API_KEY,
+    create_llm_client,
+)
 
 
 def check_day18_files() -> bool:
@@ -83,18 +90,17 @@ def build_pipeline():
 
 
 def run_query(q: str, search, reranker, top_k: int, client=None) -> tuple[str, list[str], str, str | None]:
-    from config import OPENAI_API_KEY
+    from config import OPENROUTER_API_KEY
 
     results = search.search(q)
     docs    = [{"text": r.text, "score": r.score, "metadata": r.metadata} for r in results]
     reranked = reranker.rerank(q, docs, top_k=top_k)
     contexts = [r.text for r in reranked] if reranked else [r.text for r in results[:3]]
 
-    if (OPENAI_API_KEY or client is not None) and contexts:
+    if (OPENROUTER_API_KEY or client is not None) and contexts:
         try:
             if client is None:
-                from openai import OpenAI
-                client = OpenAI()
+                client = create_llm_client()
             ctx = "\n\n".join(contexts)
             resp = client.chat.completions.create(
                 model=GENERATION_MODEL,
@@ -118,6 +124,9 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if not args.live:
         parser.error("Generation/enrichment may call APIs. Pass --live after completing pre-class setup.")
+    if not OPENROUTER_API_KEY:
+        print("Set OPENROUTER_API_KEY in the repo-root .env before live answer generation.")
+        return 2
     print("=" * 60)
     print("K4 / TRACK 3A SETUP — Generating answers for 50 questions")
     print("=" * 60)
@@ -138,11 +147,9 @@ def main(argv=None):
 
     print(f"\nRunning {len(test_set)} queries...")
     answers = []
-    from config import OPENAI_API_KEY
     client = None
-    if OPENAI_API_KEY:
-        from openai import OpenAI
-        client = OpenAI()
+    if OPENROUTER_API_KEY:
+        client = create_llm_client()
     t_start = time.time()
 
     for i, item in enumerate(test_set):
@@ -173,4 +180,4 @@ def main(argv=None):
 if __name__ == "__main__":
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
-    main()
+    raise SystemExit(main())

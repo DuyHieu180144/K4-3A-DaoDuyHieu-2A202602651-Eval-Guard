@@ -10,6 +10,7 @@ ragas>=0.1.10,<0.2
 langchain-community>=0.2,<0.3
 langchain-openai>=0.1,<0.2
 datasets>=2.19,<3
+pyarrow>=14,<20
 openai>=1.30,<2
 numpy>=1.26,<2
 

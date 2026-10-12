@@ -10,7 +10,15 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import ADVERSARIAL_SET_PATH, GUARDRAILS_CONFIG_DIR, LATENCY_BUDGET_P95_MS, PRESIDIO_LANGUAGE
+from config import (
+    ADVERSARIAL_SET_PATH,
+    GENERATION_MODEL,
+    GUARDRAILS_CONFIG_DIR,
+    LATENCY_BUDGET_P95_MS,
+    OPENROUTER_API_KEY,
+    OPENROUTER_BASE_URL,
+    PRESIDIO_LANGUAGE,
+)
 
 
 # ─── Task 9a: Presidio PII Detection ─────────────────────────────────────────
@@ -89,9 +97,20 @@ def setup_nemo_rails():
         config.yml  — model + rails config
         rails.co    — câu từ chối Colang 1.0; built-in self-check flows được bật trong YAML
     """
+    if not OPENROUTER_API_KEY:
+        raise RuntimeError("Set OPENROUTER_API_KEY in .env (or legacy OPENAI_API_KEY).")
+
+    from langchain_openai.chat_models import ChatOpenAI
     from nemoguardrails import RailsConfig, LLMRails
+
     config = RailsConfig.from_path(GUARDRAILS_CONFIG_DIR)
-    rails  = LLMRails(config)
+    llm = ChatOpenAI(
+        model=GENERATION_MODEL,
+        api_key=OPENROUTER_API_KEY,
+        base_url=OPENROUTER_BASE_URL,
+        temperature=0,
+    )
+    rails = LLMRails(config, llm=llm)
     return rails
 
 

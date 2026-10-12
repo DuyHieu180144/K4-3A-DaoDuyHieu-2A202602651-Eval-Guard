@@ -33,6 +33,7 @@ def test_ragas_adapter_preserves_rows(monkeypatch):
                                context_precision=.6, context_recall=.5) for _ in answers]
     evaluator_models = ["evaluator-test", "embedding-test"]
     evaluate = Mock(return_value={"per_question": metrics,
+                                  "evaluation_status": "evaluated",
                                   "metadata": {"evaluator_models": evaluator_models}})
     monkeypatch.setitem(sys.modules, "src.m4_eval", SimpleNamespace(evaluate_ragas=evaluate))
     evaluation = run_ragas_50q(answers)
@@ -43,6 +44,40 @@ def test_ragas_adapter_preserves_rows(monkeypatch):
     assert results[0].faithfulness == .8
     evaluate.assert_called_once()
     assert list(evaluate.call_args.args[0]) == [q["question"] for q in questions]
+
+
+def test_ragas_adapter_rejects_unusable_evaluation_payload(monkeypatch):
+    questions = load_test_set_50q()
+    answers = [{**q, "answer": "A", "contexts": ["C"]} for q in questions]
+    valid_row = SimpleNamespace(faithfulness=.8, answer_relevancy=.7,
+                                context_precision=.6, context_recall=.5)
+    valid_rows = [valid_row for _ in answers]
+    invalid_rows = [valid_row for _ in answers]
+    invalid_rows[0] = SimpleNamespace(faithfulness=float("nan"), answer_relevancy=.7,
+                                       context_precision=.6, context_recall=.5)
+    base = {"evaluation_status": "evaluated",
+            "metadata": {"evaluator_models": ["llm-test", "embedding-test"]}}
+    payloads = [
+        {**base, "evaluation_status": "failed", "per_question": valid_rows},
+        {"evaluation_status": "evaluated", "per_question": valid_rows},
+        {**base, "metadata": {"evaluator_models": []}, "per_question": valid_rows},
+        {**base, "per_question": valid_rows[:-1]},
+        {**base, "per_question": invalid_rows},
+    ]
+
+    for payload in payloads:
+        evaluate = Mock(return_value=payload)
+        monkeypatch.setitem(sys.modules, "src.m4_eval",
+                            SimpleNamespace(evaluate_ragas=evaluate))
+        with pytest.raises(ValueError):
+            run_ragas_50q(answers)
+
+
+def test_bottom_ties_keep_input_order():
+    tied = [RagasResult(index, "factual", f"Q{index}", "A", ["C"], "GT",
+                        .5, .5, .5, .5) for index in (7, 3, 9)]
+
+    assert [row["question_id"] for row in bottom_10(tied)] == [7, 3, 9]
 
 
 def test_bottom_nonempty_sorted_complete(dummy_results):
@@ -82,3 +117,8 @@ def test_weakest_distribution_is_quality_not_size():
             results.append(RagasResult(len(results)+1,dist,"Q","A",["C"],"GT",
                                        value,value,value,value))
     assert cluster_analysis(results)["dominant_failure_distribution"] == "adversarial"
+
+
+def test_cluster_empty_input_is_rejected():
+    with pytest.raises(ValueError, match="empty"):
+        cluster_analysis([])
